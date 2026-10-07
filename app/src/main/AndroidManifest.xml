@@ -19,7 +19,6 @@
 
 
     <application
-        android:name=".Aether3DApplication"
         android:allowBackup="false"
         android:hardwareAccelerated="true"
         android:label="@string/app_name"
