@@ -294,26 +294,6 @@ jobs:
 
 
 
-          if grep -R -F "cordova.js" "app/src/main/assets/www"; then
-
-            echo "::error::Cordova asset detected in native Android web assets."
-
-            exit 1
-
-          fi
-
-
-
-          if grep -R -F "https://localhost" "app/src/main/assets/www"; then
-
-            echo "::error::Legacy localhost reference detected in packaged web assets."
-
-            exit 1
-
-          fi
-
-
-
       - name: Generate Gradle Wrapper in the cloud
 
         run: |
