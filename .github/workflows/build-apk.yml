@@ -270,6 +270,18 @@ jobs:
 
 
 
+          test -s "web-dist/aether3d.bundle.js"
+
+
+
+          cp "src/index.html" "web-dist/index.html"
+
+
+
+          test -s "web-dist/index.html"
+
+
+
       - name: Install bundled web assets into native APK asset bank
 
         run: |
