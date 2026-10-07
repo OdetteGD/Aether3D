@@ -1324,7 +1324,8 @@ public final class MainActivity extends Activity {
         private JSONArray vectorJson(
             float[] values,
             int offset
-        ) {
+        )
+            throws JSONException {
 
             JSONArray result =
                 new JSONArray();
@@ -1358,7 +1359,8 @@ public final class MainActivity extends Activity {
         private JSONArray quaternionJson(
             float[] values,
             int offset
-        ) {
+        )
+            throws JSONException {
 
             JSONArray result =
                 new JSONArray();
@@ -1398,7 +1400,8 @@ public final class MainActivity extends Activity {
         private JSONArray matrixJson(
             float[] values,
             int offset
-        ) {
+        )
+            throws JSONException {
 
             JSONArray result =
                 new JSONArray();
