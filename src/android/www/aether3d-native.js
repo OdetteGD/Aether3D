@@ -1,1 +1,0 @@
-var exec=require("cordova/exec");exports.getEngineVersion=function(success,error){exec(success,error,"Aether3DNative","getEngineVersion",[]);};exports.fastInverseSquareRoot=function(value,success,error){exec(success,error,"Aether3DNative","fastInverseSquareRoot",[Number(value)]);};
