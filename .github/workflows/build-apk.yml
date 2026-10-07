@@ -62,6 +62,8 @@ jobs:
 
           node-version: "18"
 
+          package-manager-cache: false
+
 
 
       - name: Set up Gradle
@@ -71,6 +73,8 @@ jobs:
         with:
 
           gradle-version: "9.4.1"
+
+          cache-disabled: true
 
 
 
@@ -128,20 +132,17 @@ jobs:
 
 
 
-          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-36" "build-tools;36.0.0" "cmake;3.22.1" "ndk;28.2.13676358"
 
 
 
-          sdkmanager 
-            "platform-tools" 
-            "platforms;android-36" 
-            "build-tools;36.0.0" 
-            "cmake;3.22.1" 
-            "ndk;28.2.13676358"
+          yes | sdkmanager --sdk_root="$ANDROID_SDK_ROOT" --licenses >/dev/null 2>&1 || true
 
 
 
-          yes | sdkmanager --licenses >/dev/null || true
+          test -d "$ANDROID_SDK_ROOT/ndk/28.2.13676358"
+
+          test -d "$ANDROID_SDK_ROOT/cmake/3.22.1"
 
 
 
@@ -157,18 +158,17 @@ jobs:
 
 
 
-          mkdir -p 
-            "app/src/main/java/com/aether3d/studio" 
-            "app/src/main/assets/www" 
-            "app/src/main/cpp" 
-            "app/src/main/res/values" 
-            "app/src/main/res/mipmap-hdpi" 
-            "app/src/main/res/mipmap-mdpi" 
-            "app/src/main/res/mipmap-xhdpi" 
-            "app/src/main/res/mipmap-xxhdpi" 
-            "app/src/main/res/mipmap-xxxhdpi" 
-            "gradle/wrapper" 
-            "web-dist"
+          mkdir -p "app/src/main/java/com/aether3d/studio"
+
+          mkdir -p "app/src/main/assets/www"
+
+          mkdir -p "app/src/main/cpp"
+
+          mkdir -p "app/src/main/res/values"
+
+          mkdir -p "gradle/wrapper"
+
+          mkdir -p "web-dist"
 
 
 
@@ -216,9 +216,43 @@ jobs:
 
 
 
-          test ! -f "config.xml"
+          if [ -f "config.xml" ]; then
 
-          test ! -f "auto-run.js"
+            echo "::error::Cordova config.xml is still present."
+
+            exit 1
+
+          fi
+
+
+
+          if [ -d "src/android" ]; then
+
+            echo "::error::Legacy Cordova src/android directory is still present."
+
+            exit 1
+
+          fi
+
+
+
+          if [ -d "src/native" ]; then
+
+            echo "::error::Legacy src/native directory is still present."
+
+            exit 1
+
+          fi
+
+
+
+          if [ -f "auto-run.js" ]; then
+
+            echo "::error::Legacy local auto-run.js is still present."
+
+            exit 1
+
+          fi
 
 
 
@@ -231,8 +265,6 @@ jobs:
 
 
           npm install
-
-
 
           npm run build
 
@@ -247,8 +279,6 @@ jobs:
 
 
           rm -rf "app/src/main/assets/www"
-
-
 
           mkdir -p "app/src/main/assets/www"
 
@@ -274,6 +304,16 @@ jobs:
 
 
 
+          if grep -R "localhost" "app/src/main/assets/www"; then
+
+            echo "::error::Legacy localhost reference detected in packaged web assets."
+
+            exit 1
+
+          fi
+
+
+
       - name: Generate Gradle Wrapper in the cloud
 
         run: |
@@ -282,13 +322,15 @@ jobs:
 
 
 
-          gradle wrapper 
-            --gradle-version 9.4.1 
-            --distribution-type bin
+          gradle wrapper --gradle-version 9.4.1 --distribution-type bin
 
 
 
           chmod +x "./gradlew"
+
+
+
+          test -s "./gradlew"
 
 
 
@@ -304,10 +346,7 @@ jobs:
 
 
 
-          ./gradlew assembleDebug 
-            --stacktrace 
-            --no-daemon 
-            --console=plain
+          ./gradlew assembleDebug --stacktrace --no-daemon --console=plain
 
 
 
@@ -328,8 +367,6 @@ jobs:
 
 
           mkdir -p "artifacts"
-
-
 
           cp "$APK_PATH" "artifacts/app-debug.apk"
 
