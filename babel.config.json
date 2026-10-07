@@ -1,1 +1,14 @@
-{"presets":[["@babel/preset-env",{"targets":{"android":"10"},"bugfixes":true,"modules":false}]]}
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "android": "10"
+        },
+        "bugfixes": true,
+        "modules": false
+      }
+    ]
+  ]
+}
