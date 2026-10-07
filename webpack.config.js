@@ -4,6 +4,8 @@ const {
   CleanWebpackPlugin
 } = require("clean-webpack-plugin");
 
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+
 const JavaScriptObfuscator = require("webpack-obfuscator");
 
 
@@ -116,6 +118,23 @@ module.exports = {
   plugins: [
 
     new CleanWebpackPlugin(),
+
+
+
+    new CopyWebpackPlugin({
+
+      patterns: [
+
+        {
+          from: path.resolve(
+            __dirname,
+            "src/index.html"
+          ),
+
+          to: "index.html"
+        }
+      ]
+    }),
 
 
 
