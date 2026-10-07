@@ -48,6 +48,24 @@ jobs:
         run: npm install --legacy-peer-deps
       - name: Build and obfuscate editor bundle
         run: npm run build
+      - name: Build native C++20 shared libraries
+        env:
+          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
+        run: |
+          set -euo pipefail
+          rm -rf src/android/jniLibs
+          for ABI in arm64-v8a armeabi-v7a x86_64; do
+            BUILD_DIR="${RUNNER_TEMP}/aether3d-cmake-${ABI}"
+            rm -rf "$BUILD_DIR"
+            cmake -S src/native -B "$BUILD_DIR" \
+              -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+              -DANDROID_ABI="$ABI" \
+              -DANDROID_PLATFORM=android-24 \
+              -DCMAKE_BUILD_TYPE=Release
+            cmake --build "$BUILD_DIR" --target aether3d_core --parallel 2
+            mkdir -p "src/android/jniLibs/$ABI"
+            cp "$BUILD_DIR/libaether3d_core.so" "src/android/jniLibs/$ABI/libaether3d_core.so"
+          done
       - name: Prepare Cordova Android platform
         run: npx cordova platform add android@13.0.0 --no-telemetry
       - name: Build debug APK
