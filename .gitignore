@@ -1,0 +1,11 @@
+node_modules/
+www/dist/
+platforms/
+plugins/
+artifacts/
+.cxx/
+.DS_Store
+*.log
+local.properties
+.env
+.env.*
