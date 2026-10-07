@@ -5,12 +5,12 @@
   "description": "Aether3D Studio mobile-first hybrid 3D editor.",
   "main": "auto-run.js",
   "scripts": {
-    "build": "webpack --mode production",
-    "build:dev": "webpack --mode development",
-    "cordova:prepare": "cordova prepare android",
-    "android:build": "cordova build android --debug",
-    "android:release": "cordova build android --release",
-    "lint": "node --check auto-run.js && node --check src/js/main.js && node --check src/js/native-bridge.js"
+    "build": "node scripts/prepare-web.js && webpack --mode production",
+    "build:dev": "node scripts/prepare-web.js && webpack --mode development",
+    "cordova:prepare": "npm run build && cordova prepare android",
+    "android:build": "npm run build && cordova build android --debug",
+    "android:release": "npm run build && cordova build android --release",
+    "lint": "node --check auto-run.js && node --check scripts/prepare-web.js && node --check src/js/main.js && node --check src/js/native-bridge.js"
   },
   "dependencies": {"three": "0.180.0"},
   "devDependencies": {
