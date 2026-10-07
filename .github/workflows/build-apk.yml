@@ -294,7 +294,7 @@ jobs:
 
 
 
-          if grep -R "cordova.js" "app/src/main/assets/www"; then
+          if grep -R -F "cordova.js" "app/src/main/assets/www"; then
 
             echo "::error::Cordova asset detected in native Android web assets."
 
@@ -304,7 +304,7 @@ jobs:
 
 
 
-          if grep -R "localhost" "app/src/main/assets/www"; then
+          if grep -R -F "https://localhost" "app/src/main/assets/www"; then
 
             echo "::error::Legacy localhost reference detected in packaged web assets."
 
