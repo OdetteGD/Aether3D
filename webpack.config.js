@@ -53,7 +53,7 @@ module.exports = {
     rules: [
 
       {
-        test: /\\.js$/,
+        test: /\.js$/,
 
         exclude: /node_modules/,
 
@@ -76,7 +76,7 @@ module.exports = {
 
 
       {
-        test: /\\.css$/i,
+        test: /\.css$/i,
 
         use: [
           "style-loader",
