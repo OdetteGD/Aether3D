@@ -1,0 +1,172 @@
+plugins {
+
+    id "com.android.application"
+
+}
+
+
+
+android {
+
+    namespace "com.aether3d.studio"
+
+
+
+    compileSdk 36
+
+
+
+    ndkVersion "28.2.13676358"
+
+
+
+    defaultConfig {
+
+        applicationId "com.aether3d.studio"
+
+
+
+        minSdk 24
+
+
+
+        targetSdk 36
+
+
+
+        versionCode 10000
+
+
+
+        versionName "1.0.0"
+
+
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+
+
+        externalNativeBuild {
+
+            cmake {
+
+                cppFlags "-std=c++20",
+                          "-fexceptions",
+                          "-frtti"
+
+
+
+                arguments "-DANDROID_STL=c++_static"
+
+            }
+
+        }
+
+
+
+        ndk {
+
+            abiFilters "arm64-v8a",
+                       "armeabi-v7a",
+                       "x86_64"
+
+        }
+
+    }
+
+
+
+    buildTypes {
+
+        debug {
+
+            minifyEnabled false
+
+        }
+
+
+
+        release {
+
+            minifyEnabled true
+
+            shrinkResources true
+
+            proguardFiles getDefaultProguardFile(
+                "proguard-android-optimize.txt"
+            ),
+            "proguard-rules.pro"
+
+        }
+
+    }
+
+
+
+    compileOptions {
+
+        sourceCompatibility JavaVersion.VERSION_17
+
+        targetCompatibility JavaVersion.VERSION_17
+
+    }
+
+
+
+    externalNativeBuild {
+
+        cmake {
+
+            path file(
+                "src/main/cpp/CMakeLists.txt"
+            )
+
+            version "3.22.1"
+
+        }
+
+    }
+
+
+
+    packaging {
+
+        jniLibs {
+
+            useLegacyPackaging false
+
+        }
+
+    }
+
+
+
+    buildFeatures {
+
+        buildConfig false
+
+        aidl false
+
+        renderScript false
+
+    }
+
+
+
+    lint {
+
+        abortOnError true
+
+        checkReleaseBuilds true
+
+    }
+
+}
+
+
+
+dependencies {
+
+    implementation "androidx.webkit:webkit:1.17.1"
+
+}
