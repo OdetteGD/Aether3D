@@ -1,31 +1,213 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<widget id="com.aether3d.studio" version="1.0.0" android-versionCode="10000" xmlns="http://www.w3.org/ns/widgets" xmlns:android="http://schemas.android.com/apk/res/android">
-  <name>Aether3D Studio</name>
-  <description>Native Android mobile 3D game engine and editor.</description>
-  <author email="dev@aether3d.local" href="https://github.com/OdetteGD/Aether3D">Aether3D Studio</author>
-  <content src="index.html" />
-  <access origin="*" />
-  <allow-navigation href="https://*/*" />
-  <allow-intent href="https://*/*" />
-  <preference name="android-minSdkVersion" value="24" />
-  <preference name="android-targetSdkVersion" value="34" />
-  <preference name="android-compileSdkVersion" value="34" />
-  <preference name="android-buildToolsVersion" value="34.0.0" />
-  <preference name="Orientation" value="landscape" />
-  <preference name="Fullscreen" value="false" />
-  <preference name="DisallowOverscroll" value="true" />
-  <preference name="AndroidInsecureFileModeEnabled" value="false" />
-  <preference name="InspectableWebview" value="false" />
-  <engine name="android" spec="13.0.0" />
-  <plugin name="com.aether3d.native" spec="./src/android" />
+
+<widget
+  id="com.aether3d.studio"
+  version="1.0.0"
+  android-versionCode="10000"
+  xmlns="http://www.w3.org/ns/widgets"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+>
+
+  <name>
+    Aether3D Studio
+  </name>
+
+
+
+  <description>
+    Native Android mobile 3D game engine and editor.
+  </description>
+
+
+
+  <author
+    email="dev@aether3d.local"
+    href="https://github.com/OdetteGD/Aether3D"
+  >
+    Aether3D Studio
+  </author>
+
+
+
+  <!--
+    The editor is packaged into the APK's Cordova www directory.
+
+    Cordova Android's secure WebViewAssetLoader serves those
+    embedded assets through an internal HTTPS origin:
+
+        https://localhost/
+
+    There is deliberately no localhost development server and
+    no dependency on an external loopback service.
+
+    AndroidInsecureFileModeEnabled remains false because file://
+    mode weakens WebView origin isolation and is not required
+    when the web root is correctly packaged.
+  -->
+
+  <content
+    src="index.html"
+  />
+
+
+
+  <access
+    origin="*"
+  />
+
+
+
+  <!--
+    Only the embedded application origin may replace the main
+    editor document. Remote services remain available to the
+    application through HTTPS networking and CSP connect-src.
+  -->
+
+  <allow-navigation
+    href="https://localhost/*"
+  />
+
+
+
+  <allow-intent
+    href="https://*/*"
+  />
+
+
+
+  <preference
+    name="scheme"
+    value="https"
+  />
+
+
+
+  <preference
+    name="hostname"
+    value="localhost"
+  />
+
+
+
+  <preference
+    name="AndroidInsecureFileModeEnabled"
+    value="false"
+  />
+
+
+
+  <preference
+    name="android-minSdkVersion"
+    value="24"
+  />
+
+
+
+  <preference
+    name="android-targetSdkVersion"
+    value="34"
+  />
+
+
+
+  <preference
+    name="android-compileSdkVersion"
+    value="34"
+  />
+
+
+
+  <preference
+    name="android-buildToolsVersion"
+    value="34.0.0"
+  />
+
+
+
+  <preference
+    name="Orientation"
+    value="landscape"
+  />
+
+
+
+  <preference
+    name="Fullscreen"
+    value="false"
+  />
+
+
+
+  <preference
+    name="DisallowOverscroll"
+    value="true"
+  />
+
+
+
+  <preference
+    name="InspectableWebview"
+    value="false"
+  />
+
+
+
+  <engine
+    name="android"
+    spec="13.0.0"
+  />
+
+
+
+  <plugin
+    name="com.aether3d.native"
+    spec="./src/android"
+  />
+
+
+
   <platform name="android">
-    <edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application">
-      <application android:hardwareAccelerated="true" android:usesCleartextTraffic="false" android:allowBackup="false" android:supportsRtl="true" />
+
+    <edit-config
+      file="app/src/main/AndroidManifest.xml"
+      mode="merge"
+      target="/manifest/application"
+    >
+
+      <application
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="false"
+        android:allowBackup="false"
+        android:supportsRtl="true"
+      />
+
     </edit-config>
-    <config-file parent="/manifest" target="app/src/main/AndroidManifest.xml">
-      <uses-permission android:name="android.permission.INTERNET" />
-      <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-      <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+
+
+    <config-file
+      parent="/manifest"
+      target="app/src/main/AndroidManifest.xml"
+    >
+
+      <uses-permission
+        android:name="android.permission.INTERNET"
+      />
+
+
+
+      <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+      />
+
+
+
+      <uses-permission
+        android:name="android.permission.ACCESS_WIFI_STATE"
+      />
+
     </config-file>
+
   </platform>
+
 </widget>
