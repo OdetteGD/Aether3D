@@ -1,1 +1,97 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#080b10"><meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; connect-src 'self' https: wss:;"><title>Aether3D Studio</title></head><body><div id="app"><canvas id="viewport" aria-label="Aether3D 3D viewport"></canvas><section id="hud"><div id="brand">AETHER3D STUDIO</div><div id="status">Initializing native renderer…</div><div id="version">Core: connecting…</div></section></div><script src="cordova.js"></script><script src="dist/aether3d.bundle.js"></script></body></html>
+<!doctype html>
+
+<html
+  lang="en"
+>
+
+<head>
+
+  <meta
+    charset="utf-8"
+  />
+
+
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+
+
+
+  <meta
+    name="theme-color"
+    content="#07090D"
+  />
+
+
+
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'self' data: blob:; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https: wss:; worker-src 'self' blob:;"
+  />
+
+
+
+  <title>
+    Aether3D Studio
+  </title>
+
+</head>
+
+
+
+<body>
+
+  <main
+    id="aether3d-app"
+    aria-label="Aether3D Studio"
+  >
+
+    <canvas
+      id="viewport"
+      aria-label="Aether3D 3D workspace"
+    ></canvas>
+
+
+
+    <section
+      id="hud"
+      aria-live="polite"
+    >
+
+      <div
+        id="brand"
+      >
+        AETHER3D STUDIO
+      </div>
+
+
+
+      <div
+        id="status"
+      >
+        Native viewport initializing…
+      </div>
+
+
+
+      <div
+        id="version"
+      >
+        Physics Core: connecting…
+      </div>
+
+
+
+      <pre
+        id="telemetry"
+      ></pre>
+
+    </section>
+
+  </main>
+
+</body>
+
+</html>
