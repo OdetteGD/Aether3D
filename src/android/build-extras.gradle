@@ -1,1 +1,0 @@
-android{defaultConfig{externalNativeBuild{cmake{arguments "-DANDROID_STL=c++_static";cppFlags "-std=c++20","-fexceptions","-frtti";targets "aether3d_core"}}}externalNativeBuild{cmake{path "../../src/native/CMakeLists.txt";version "3.22.1"}}packagingOptions{jniLibs{useLegacyPackaging=false}}}
