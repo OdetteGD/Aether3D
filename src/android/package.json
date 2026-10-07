@@ -1,0 +1,19 @@
+{
+  "name": "com.aether3d.native",
+  "version": "1.0.0",
+  "description": "Aether3D native C++20 Android bridge plugin.",
+  "cordova": {
+    "id": "com.aether3d.native",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "cordova",
+    "aether3d",
+    "android",
+    "native",
+    "cpp"
+  ],
+  "license": "Apache-2.0"
+}
