@@ -457,6 +457,20 @@ jobs:
 
 
 
+      - name: Verify packaged Mono runtime shared libraries
+        run: |
+          set -euo pipefail
+
+          APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            echo "Checking lib/\\$abi/libmonosgen-2.0.so for Mono runtime"
+            unzip -l "$APK_PATH" | grep -F "lib/\\$abi/libmonosgen-2.0.so"
+          done
+
+          echo "Mono libmonosgen-2.0.so packaging verified for all configured ABIs."
+
+
       - name: Upload app-debug.apk
 
         uses: actions/upload-artifact@v6
