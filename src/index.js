@@ -311,8 +311,44 @@ function updateTelemetryDisplay(
 
 
 
+  const nativeSystemsTelemetry = [
+    frame.telemetryLine,
+
+    `vehicle speed=${Number(
+      frame.vehicleSpeed || 0
+    ).toFixed(2)} m/s`,
+
+    `engine rpm=${Math.round(
+      frame.engineRpm || 0
+    )}`,
+
+    `vehicle health=${Math.round(
+      frame.vehicleHealth || 0
+    )}`,
+
+    `character grounded=${Boolean(
+      frame.characterGrounded
+    )}`,
+
+    `character speed=${Number(
+      frame.characterSpeed || 0
+    ).toFixed(2)} m/s`,
+
+    `destructible health=${Math.round(
+      frame.destructibleHealth || 0
+    )}`,
+
+    `fracture pieces=${Math.round(
+      frame.fracturePieces || 0
+    )}`
+  ];
+
+
+
   telemetryElement.textContent =
-    frame.telemetryLine;
+    nativeSystemsTelemetry.join(
+      "\\n"
+    );
 
 
 
