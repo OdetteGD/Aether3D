@@ -1005,6 +1005,61 @@ public final class MainActivity extends Activity {
 
 
 
+                if (
+                    nativeFrame.length >= 36
+                ) {
+
+                    response.put(
+                        "vehicleSpeed",
+                        nativeFrame[29]
+                    );
+
+
+
+                    response.put(
+                        "engineRpm",
+                        nativeFrame[30]
+                    );
+
+
+
+                    response.put(
+                        "vehicleHealth",
+                        nativeFrame[31]
+                    );
+
+
+
+                    response.put(
+                        "characterGrounded",
+                        nativeFrame[32] > 0.5f
+                    );
+
+
+
+                    response.put(
+                        "characterSpeed",
+                        nativeFrame[33]
+                    );
+
+
+
+                    response.put(
+                        "destructibleHealth",
+                        nativeFrame[34]
+                    );
+
+
+
+                    response.put(
+                        "fracturePieces",
+                        (int) nativeFrame[35]
+                    );
+
+                }
+
+
+
                 response.put(
                     "telemetryLine",
                     String.format(
