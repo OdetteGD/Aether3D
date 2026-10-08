@@ -63,26 +63,72 @@ camera.lookAt(
 
 
 
-const renderer = new THREE.WebGLRenderer(
-  {
-    canvas: viewportCanvas,
+let renderer = null;
 
-    antialias: true,
-
-    alpha: false,
-
-    powerPreference: "high-performance"
-  }
-);
+let webglAvailable = true;
 
 
 
-renderer.setPixelRatio(
-  Math.min(
-    window.devicePixelRatio || 1,
-    2
-  )
-);
+try {
+
+  renderer = new THREE.WebGLRenderer(
+    {
+      canvas: viewportCanvas,
+
+      antialias: false,
+
+      alpha: false,
+
+      powerPreference: "default"
+    }
+  );
+
+
+
+  renderer.setPixelRatio(
+    Math.min(
+      window.devicePixelRatio || 1,
+      1.5
+    )
+  );
+
+} catch (error) {
+
+  webglAvailable = false;
+
+
+
+  console.error(
+    "Aether3D WebGL initialization failed.",
+    error
+  );
+
+
+
+  statusElement.textContent =
+    "WebGL unavailable; safe 2D startup mode active.";
+
+
+
+  versionElement.textContent =
+    "Physics Core: native startup independent from WebGL";
+
+
+
+  telemetryElement.textContent =
+    "The native runtime loaded, but the device WebGL context could not be created.";
+
+
+
+  renderer = {
+
+    setSize() {},
+
+    render() {}
+
+  };
+
+}
 
 
 
@@ -233,6 +279,56 @@ function resizeViewport() {
 
 
 window.addEventListener(
+  "error",
+  (event) => {
+
+    console.error(
+      "Aether3D runtime error.",
+      event.error || event.message
+    );
+
+
+
+    if (
+      statusElement
+    ) {
+
+      statusElement.textContent =
+        "Runtime error captured; safe mode active.";
+
+    }
+
+  }
+);
+
+
+
+window.addEventListener(
+  "unhandledrejection",
+  (event) => {
+
+    console.error(
+      "Aether3D unhandled promise rejection.",
+      event.reason
+    );
+
+
+
+    if (
+      statusElement
+    ) {
+
+      statusElement.textContent =
+        "Runtime exception captured; safe mode active.";
+
+    }
+
+  }
+);
+
+
+
+window.addEventListener(
   "resize",
   resizeViewport,
   {
@@ -247,13 +343,13 @@ function parseTransformationTelemetry(
 ) {
 
   const positionMatch = rawTelemetry.match(
-    /pos=\\((-?[0-9.]+),(-?[0-9.]+),(-?[0-9.]+)\\)/
+    /pos=\((-?[0-9.]+),(-?[0-9.]+),(-?[0-9.]+)\)/
   );
 
 
 
   const velocityMatch = rawTelemetry.match(
-    /vel=\\((-?[0-9.]+),(-?[0-9.]+),(-?[0-9.]+)\\)/
+    /vel=\((-?[0-9.]+),(-?[0-9.]+),(-?[0-9.]+)\)/
   );
 
 
