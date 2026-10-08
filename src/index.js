@@ -622,10 +622,16 @@ function renderFrame(
 
 
 
-  renderer.render(
-    scene,
-    camera
-  );
+  if (
+    webglAvailable
+  ) {
+
+    renderer.render(
+      scene,
+      camera
+    );
+
+  }
 
 }
 
