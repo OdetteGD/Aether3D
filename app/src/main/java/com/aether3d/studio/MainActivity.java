@@ -99,11 +99,40 @@ public final class MainActivity extends Activity {
 
 
 
+    private static final boolean NATIVE_LIBRARY_LOADED;
+
+
+
     static {
 
-        System.loadLibrary(
-            "aether3d_physics"
-        );
+        boolean loaded = false;
+
+
+
+        try {
+
+            System.loadLibrary(
+                "aether3d_physics"
+            );
+
+            loaded = true;
+
+        } catch (
+            UnsatisfiedLinkError error
+        ) {
+
+            Log.e(
+                TAG,
+                "Native physics library could not be loaded.",
+                error
+            );
+
+        }
+
+
+
+        NATIVE_LIBRARY_LOADED =
+            loaded;
 
     }
 
@@ -170,9 +199,9 @@ public final class MainActivity extends Activity {
                 )
 
                 .addPathHandler(
-                    "/",
-                    new LocalWwwPathHandler(
-                        getAssets()
+                    "/assets/",
+                    new WebViewAssetLoader.AssetsPathHandler(
+                        this
                     )
                 )
 
@@ -274,9 +303,27 @@ public final class MainActivity extends Activity {
 
 
 
-        webView.loadUrl(
-            LOCAL_ENTRY_POINT
-        );
+        try {
+
+            webView.loadUrl(
+                LOCAL_ENTRY_POINT
+            );
+
+        } catch (
+            RuntimeException error
+        ) {
+
+            Log.e(
+                TAG,
+                "Unable to start the local WebView.",
+                error
+            );
+
+            showFatalStartupMessage(
+                error
+            );
+
+        }
 
     }
 
@@ -455,10 +502,16 @@ public final class MainActivity extends Activity {
 
 
 
-        targetWebView.addJavascriptInterface(
-            new NativePhysicsBridge(),
-            JAVASCRIPT_BRIDGE_NAME
-        );
+        if (
+            NATIVE_LIBRARY_LOADED
+        ) {
+
+            targetWebView.addJavascriptInterface(
+                new NativePhysicsBridge(),
+                JAVASCRIPT_BRIDGE_NAME
+            );
+
+        }
 
     }
 
@@ -483,6 +536,29 @@ public final class MainActivity extends Activity {
         LOCAL_HOST.equalsIgnoreCase(
             uri.getHost()
         );
+
+    }
+
+
+
+    private void showFatalStartupMessage(
+        Throwable error
+    ) {
+
+        String message =
+            "Aether3D could not initialize the native viewport.";
+
+        Log.e(
+            TAG,
+            message,
+            error
+        );
+
+        Toast.makeText(
+            this,
+            message,
+            Toast.LENGTH_LONG
+        ).show();
 
     }
 
@@ -742,320 +818,6 @@ public final class MainActivity extends Activity {
 
 
 
-    private static final class LocalWwwPathHandler
-        implements WebViewAssetLoader.PathHandler {
-
-
-
-        private final AssetManager assetManager;
-
-
-
-        private LocalWwwPathHandler(
-            AssetManager assetManager
-        ) {
-
-            this.assetManager =
-                assetManager;
-
-        }
-
-
-
-        @Override
-        public WebResourceResponse handle(
-            String path
-        ) {
-
-            String relativePath =
-                path == null
-                    ? ""
-                    : path;
-
-
-
-            while (
-                relativePath.startsWith("/")
-            ) {
-
-                relativePath =
-                    relativePath.substring(
-                        1
-                    );
-
-            }
-
-
-
-            if (
-                relativePath.isEmpty()
-            ) {
-
-                relativePath =
-                    "index.html";
-
-            }
-
-
-
-            if (
-                relativePath.contains(
-                    ".."
-                )
-                ||
-                relativePath.contains(
-                    "\\"
-                )
-                ||
-                relativePath.contains(
-                    ":"
-                )
-            ) {
-
-                return null;
-
-            }
-
-
-
-            String assetPath =
-                "www/"
-                    +
-                relativePath;
-
-
-
-            try {
-
-                InputStream stream =
-                    assetManager.open(
-                        assetPath,
-                        AssetManager.ACCESS_STREAMING
-                    );
-
-
-
-                String mimeType =
-                    detectMimeType(
-                        assetPath
-                    );
-
-
-
-                String encoding =
-                    isTextAsset(
-                        mimeType
-                    )
-                        ? "UTF-8"
-                        : null;
-
-
-
-                return new WebResourceResponse(
-                    mimeType,
-                    encoding,
-                    stream
-                );
-
-            } catch (IOException error) {
-
-                Log.e(
-                    TAG,
-                    "Missing packaged web asset: "
-                        +
-                    assetPath,
-                    error
-                );
-
-
-
-                return null;
-
-            }
-
-        }
-
-
-
-        private static boolean isTextAsset(
-            String mimeType
-        ) {
-
-            return mimeType.startsWith(
-                "text/"
-            )
-            ||
-            mimeType.equals(
-                "application/javascript"
-            )
-            ||
-            mimeType.equals(
-                "application/json"
-            )
-            ||
-            mimeType.equals(
-                "application/wasm"
-            );
-
-        }
-
-
-
-        private static String detectMimeType(
-            String assetPath
-        ) {
-
-            String lower =
-                assetPath.toLowerCase(
-                    Locale.US
-                );
-
-
-
-            if (
-                lower.endsWith(
-                    ".html"
-                )
-            ) {
-
-                return "text/html";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".js"
-                )
-            ) {
-
-                return "application/javascript";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".css"
-                )
-            ) {
-
-                return "text/css";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".json"
-                )
-            ) {
-
-                return "application/json";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".wasm"
-                )
-            ) {
-
-                return "application/wasm";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".png"
-                )
-            ) {
-
-                return "image/png";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".jpg"
-                )
-                ||
-                lower.endsWith(
-                    ".jpeg"
-                )
-            ) {
-
-                return "image/jpeg";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".webp"
-                )
-            ) {
-
-                return "image/webp";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".svg"
-                )
-            ) {
-
-                return "image/svg+xml";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".woff2"
-                )
-            ) {
-
-                return "font/woff2";
-
-            }
-
-
-
-            if (
-                lower.endsWith(
-                    ".woff"
-                )
-            ) {
-
-                return "font/woff";
-
-            }
-
-
-
-            return "application/octet-stream";
-
-        }
-
-    }
-
-
-
     public final class NativePhysicsBridge {
 
 
@@ -1068,6 +830,16 @@ public final class MainActivity extends Activity {
         @JavascriptInterface
         public synchronized String getEngineVersion() {
 
+            if (
+                !NATIVE_LIBRARY_LOADED
+            ) {
+
+                return "Native physics unavailable; WebView fallback active.";
+
+            }
+
+
+
             return nativeGetEngineVersion();
 
         }
@@ -1078,6 +850,18 @@ public final class MainActivity extends Activity {
         public synchronized String stepSimulation(
             String payload
         ) {
+
+            if (
+                !NATIVE_LIBRARY_LOADED
+            ) {
+
+                return errorResponse(
+                    "Native physics library is unavailable."
+                );
+
+            }
+
+
 
             try {
 
