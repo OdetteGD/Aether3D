@@ -306,7 +306,8 @@ jobs:
 
 
 
-          grep -F 'https://appassets.androidplatform.net/assets/www/index.html' "app/src/main/assets/www/index.html"
+          grep -F '<script' "app/src/main/assets/www/index.html"
+          grep -F 'aether3d.bundle.js' "app/src/main/assets/www/index.html"
 
 
 
