@@ -30,6 +30,7 @@ import android.view.WindowInsetsController;
 
 import android.webkit.JavascriptInterface;
 
+import android.webkit.ConsoleMessage;
 import android.webkit.WebChromeClient;
 
 import android.webkit.WebResourceError;
@@ -85,12 +86,12 @@ public final class MainActivity extends Activity {
 
 
     private static final String LOCAL_HOST =
-        "androidplatform.net";
+        "appassets.androidplatform.net";
 
 
 
     private static final String LOCAL_ENTRY_POINT =
-        "https://androidplatform.net/index.html";
+        "https://appassets.androidplatform.net/assets/www/index.html";
 
 
 
@@ -193,10 +194,6 @@ public final class MainActivity extends Activity {
 
         assetLoader =
             new WebViewAssetLoader.Builder()
-
-                .setDomain(
-                    LOCAL_HOST
-                )
 
                 .addPathHandler(
                     "/assets/",
@@ -405,7 +402,7 @@ public final class MainActivity extends Activity {
 
 
         settings.setCacheMode(
-            WebSettings.LOAD_DEFAULT
+            WebSettings.LOAD_NO_CACHE
         );
 
 
@@ -417,7 +414,7 @@ public final class MainActivity extends Activity {
 
 
         settings.setOffscreenPreRaster(
-            true
+            false
         );
 
 
@@ -489,7 +486,37 @@ public final class MainActivity extends Activity {
 
 
         targetWebView.setWebChromeClient(
-            new WebChromeClient()
+            new WebChromeClient() {
+
+                @Override
+                public boolean onConsoleMessage(
+                    ConsoleMessage consoleMessage
+                ) {
+
+                    Log.d(
+                        TAG,
+                        "JS["
+                            +
+                        consoleMessage.messageLevel()
+                            +
+                        "] "
+                            +
+                        consoleMessage.message()
+                            +
+                        " @"
+                            +
+                        consoleMessage.lineNumber()
+                            +
+                        " "
+                            +
+                        consoleMessage.sourceId()
+                    );
+
+                    return true;
+
+                }
+
+            }
         );
 
 
@@ -609,10 +636,6 @@ public final class MainActivity extends Activity {
         );
 
         webView.clearHistory();
-
-        webView.clearCache(
-            true
-        );
 
         webView.destroy();
 
@@ -763,6 +786,18 @@ public final class MainActivity extends Activity {
                         +
                     error
                         .getDescription()
+                        +
+                    " url="
+                        +
+                    request.getUrl()
+                );
+
+                showFatalStartupMessage(
+                    new IllegalStateException(
+                        "Local WebView asset failed: "
+                            +
+                        error.getDescription()
+                    )
                 );
 
             }
