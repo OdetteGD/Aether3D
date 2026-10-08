@@ -50,6 +50,10 @@
 
 
 
+#include <utility>
+
+
+
 namespace {
 
 
@@ -2718,7 +2722,7 @@ public:
 
 
 
-    std::array<float, 29> step(
+    std::array<float, 36> step(
         const Vec3& inputPosition,
         const Vec3& inputVelocity,
         float deltaSeconds
@@ -2761,7 +2765,9 @@ public:
                 inputVelocity.x * 0.25f,
                 -1.0f,
                 1.0f
-            );
+            )
+            *
+            vehicleDamage.driveMultiplier();
 
 
 
