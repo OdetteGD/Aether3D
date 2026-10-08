@@ -1045,6 +1045,234 @@ public final class MainActivity extends Activity {
 
 
         @JavascriptInterface
+        public synchronized String stepCharacter(
+            float velocityX,
+            float velocityZ,
+            boolean jump,
+            float deltaSeconds
+        ) {
+
+            if (
+                !NATIVE_LIBRARY_LOADED
+            ) {
+
+                return errorResponse(
+                    "Native physics library is unavailable."
+                );
+
+            }
+
+
+
+            try {
+
+                float[] frame =
+                    nativeStepCharacter(
+                        velocityX,
+                        velocityZ,
+                        jump,
+                        deltaSeconds
+                    );
+
+
+
+                JSONObject response =
+                    new JSONObject();
+
+
+
+                response.put(
+                    "position",
+                    vectorJson(
+                        frame,
+                        0
+                    )
+                );
+
+
+
+                response.put(
+                    "velocity",
+                    vectorJson(
+                        frame,
+                        3
+                    )
+                );
+
+
+
+                response.put(
+                    "grounded",
+                    frame[6] > 0.5f
+                );
+
+
+
+                return response.toString();
+
+            } catch (
+                Exception error
+            ) {
+
+                return errorResponse(
+                    "Character simulation failed: "
+                        +
+                    error.getMessage()
+                );
+
+            }
+
+        }
+
+
+
+        @JavascriptInterface
+        public synchronized String solveIK(
+            float rootX,
+            float rootY,
+            float rootZ,
+            float targetX,
+            float targetY,
+            float targetZ,
+            float lengthOne,
+            float lengthTwo,
+            float lengthThree,
+            float poleX,
+            float poleY,
+            float poleZ
+        ) {
+
+            if (
+                !NATIVE_LIBRARY_LOADED
+            ) {
+
+                return errorResponse(
+                    "Native physics library is unavailable."
+                );
+
+            }
+
+
+
+            try {
+
+                float[] joints =
+                    nativeSolveIK(
+                        rootX,
+                        rootY,
+                        rootZ,
+                        targetX,
+                        targetY,
+                        targetZ,
+                        lengthOne,
+                        lengthTwo,
+                        lengthThree,
+                        poleX,
+                        poleY,
+                        poleZ
+                    );
+
+
+
+                JSONObject response =
+                    new JSONObject();
+
+
+
+                response.put(
+                    "root",
+                    vectorJson(
+                        joints,
+                        0
+                    )
+                );
+
+
+
+                response.put(
+                    "jointOne",
+                    vectorJson(
+                        joints,
+                        3
+                    )
+                );
+
+
+
+                response.put(
+                    "jointTwo",
+                    vectorJson(
+                        joints,
+                        6
+                    )
+                );
+
+
+
+                response.put(
+                    "endEffector",
+                    vectorJson(
+                        joints,
+                        9
+                    )
+                );
+
+
+
+                return response.toString();
+
+            } catch (
+                Exception error
+            ) {
+
+                return errorResponse(
+                    "IK solve failed: "
+                        +
+                    error.getMessage()
+                );
+
+            }
+
+        }
+
+
+
+        @JavascriptInterface
+        public synchronized void applyImpact(
+            float energy,
+            float pointX,
+            float pointY,
+            float pointZ,
+            float normalX,
+            float normalY,
+            float normalZ
+        ) {
+
+            if (
+                !NATIVE_LIBRARY_LOADED
+            ) {
+
+                return;
+
+            }
+
+
+
+            nativeApplyImpact(
+                energy,
+                pointX,
+                pointY,
+                pointZ,
+                normalX,
+                normalY,
+                normalZ
+            );
+
+        }
+
+
+
+        @JavascriptInterface
         public synchronized void resetSimulation() {
 
             nativeResetSimulation();
@@ -1252,6 +1480,47 @@ public final class MainActivity extends Activity {
             float[] positions,
             float[] velocities,
             float deltaSeconds
+        );
+
+
+
+    private static native float[]
+        nativeStepCharacter(
+            float velocityX,
+            float velocityZ,
+            boolean jump,
+            float deltaSeconds
+        );
+
+
+
+    private static native void
+        nativeApplyImpact(
+            float energy,
+            float pointX,
+            float pointY,
+            float pointZ,
+            float normalX,
+            float normalY,
+            float normalZ
+        );
+
+
+
+    private static native float[]
+        nativeSolveIK(
+            float rootX,
+            float rootY,
+            float rootZ,
+            float targetX,
+            float targetY,
+            float targetZ,
+            float lengthOne,
+            float lengthTwo,
+            float lengthThree,
+            float poleX,
+            float poleY,
+            float poleZ
         );
 
 
