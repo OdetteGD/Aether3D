@@ -104,9 +104,15 @@ public final class MainActivity extends Activity {
 
 
 
+    private static final boolean MONO_LIBRARY_LOADED;
+
+
+
     static {
 
-        boolean loaded = false;
+        boolean nativeLoaded = false;
+
+        boolean monoLoaded = false;
 
 
 
@@ -116,7 +122,7 @@ public final class MainActivity extends Activity {
                 "aether3d_physics"
             );
 
-            loaded = true;
+            nativeLoaded = true;
 
         } catch (
             UnsatisfiedLinkError error
@@ -132,8 +138,38 @@ public final class MainActivity extends Activity {
 
 
 
+        try {
+
+            System.loadLibrary(
+                "monosgen-2.0"
+            );
+
+            monoLoaded = true;
+
+            Log.i(
+                TAG,
+                "Mono runtime loaded: libmonosgen-2.0.so"
+            );
+
+        } catch (
+            UnsatisfiedLinkError error
+        ) {
+
+            Log.e(
+                TAG,
+                "Mono runtime could not be loaded. APK Mono packaging is invalid for this ABI.",
+                error
+            );
+
+        }
+
+
+
         NATIVE_LIBRARY_LOADED =
-            loaded;
+            nativeLoaded;
+
+        MONO_LIBRARY_LOADED =
+            monoLoaded;
 
     }
 
