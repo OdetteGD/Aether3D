@@ -2964,6 +2964,120 @@ public:
 
 
 
+    std::array<float, 7> stepCharacter(
+        float desiredVelocityX,
+        float desiredVelocityZ,
+        bool jumpRequested,
+        float deltaSeconds
+    ) {
+
+        character.step(
+            Vec3(
+                desiredVelocityX,
+                0.0f,
+                desiredVelocityZ
+            ),
+            jumpRequested,
+            std::clamp(
+                deltaSeconds,
+                0.0001f,
+                0.0333333f
+            )
+        );
+
+
+
+        return std::array<float, 7> {
+            character.position.x,
+            character.position.y,
+            character.position.z,
+            character.velocity.x,
+            character.velocity.y,
+            character.velocity.z,
+            character.grounded
+                ? 1.0f
+                : 0.0f
+        };
+
+    }
+
+
+
+    void applyImpact(
+        float impactEnergy,
+        const Vec3& localImpactPoint,
+        const Vec3& impactNormal
+    ) {
+
+        vehicleDamage.applyImpact(
+            impactEnergy,
+            localImpactPoint
+        );
+
+
+
+        destructibleObject.applyImpact(
+            localImpactPoint,
+            impactNormal,
+            impactEnergy
+        );
+
+    }
+
+
+
+    std::array<float, 12> solveIk(
+        const Vec3& root,
+        const Vec3& target,
+        float lengthOne,
+        float lengthTwo,
+        float lengthThree,
+        const Vec3& poleDirection
+    ) const {
+
+        const IKSolution solution =
+            solveThreeJointIk(
+                root,
+                target,
+                std::max(
+                    lengthOne,
+                    kEpsilon
+                ),
+                std::max(
+                    lengthTwo,
+                    kEpsilon
+                ),
+                std::max(
+                    lengthThree,
+                    kEpsilon
+                ),
+                poleDirection
+            );
+
+
+
+        return std::array<float, 12> {
+            solution.root.x,
+            solution.root.y,
+            solution.root.z,
+
+            solution.jointOne.x,
+            solution.jointOne.y,
+            solution.jointOne.z,
+
+            solution.jointTwo.x,
+            solution.jointTwo.y,
+            solution.jointTwo.z,
+
+            solution.endEffector.x,
+            solution.endEffector.y,
+            solution.endEffector.z
+        };
+
+    }
+
+
+
     std::uint64_t getFrame() const {
 
         return simulationFrame;
@@ -3207,6 +3321,220 @@ Java_com_aether3d_studio_MainActivity_nativeStepSimulation(
         output[0],
         output[1],
         output[2]
+    );
+
+
+
+    return result;
+
+}
+
+
+
+extern "C"
+JNIEXPORT jfloatArray JNICALL
+Java_com_aether3d_studio_MainActivity_nativeStepCharacter(
+    JNIEnv* env,
+    jclass,
+    jfloat desiredVelocityX,
+    jfloat desiredVelocityZ,
+    jboolean jumpRequested,
+    jfloat deltaSeconds
+) {
+
+    const float safeDelta =
+        std::clamp(
+            deltaSeconds,
+            0.0001f,
+            0.0333333f
+        );
+
+
+
+    std::array<float, 7> output {};
+
+
+
+    {
+
+        std::lock_guard<std::mutex> lock(
+            gPhysicsMutex
+        );
+
+
+
+        output =
+            gPhysicsWorld.stepCharacter(
+                desiredVelocityX,
+                desiredVelocityZ,
+                jumpRequested == JNI_TRUE,
+                safeDelta
+            );
+
+    }
+
+
+
+    jfloatArray result =
+        env->NewFloatArray(
+            static_cast<jsize>(
+                output.size()
+            )
+        );
+
+
+
+    if (
+        result == nullptr
+    ) {
+
+        return nullptr;
+
+    }
+
+
+
+    env->SetFloatArrayRegion(
+        result,
+        0,
+        static_cast<jsize>(
+            output.size()
+        ),
+        output.data()
+    );
+
+
+
+    return result;
+
+}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_aether3d_studio_MainActivity_nativeApplyImpact(
+    JNIEnv*,
+    jclass,
+    jfloat impactEnergy,
+    jfloat pointX,
+    jfloat pointY,
+    jfloat pointZ,
+    jfloat normalX,
+    jfloat normalY,
+    jfloat normalZ
+) {
+
+    std::lock_guard<std::mutex> lock(
+        gPhysicsMutex
+    );
+
+
+
+    gPhysicsWorld.applyImpact(
+        std::max(
+            0.0f,
+            impactEnergy
+        ),
+        Vec3(
+            pointX,
+            pointY,
+            pointZ
+        ),
+        Vec3(
+            normalX,
+            normalY,
+            normalZ
+        )
+    );
+
+}
+
+
+
+extern "C"
+JNIEXPORT jfloatArray JNICALL
+Java_com_aether3d_studio_MainActivity_nativeSolveIK(
+    JNIEnv* env,
+    jclass,
+    jfloat rootX,
+    jfloat rootY,
+    jfloat rootZ,
+    jfloat targetX,
+    jfloat targetY,
+    jfloat targetZ,
+    jfloat lengthOne,
+    jfloat lengthTwo,
+    jfloat lengthThree,
+    jfloat poleX,
+    jfloat poleY,
+    jfloat poleZ
+) {
+
+    std::array<float, 12> output {};
+
+
+
+    {
+
+        std::lock_guard<std::mutex> lock(
+            gPhysicsMutex
+        );
+
+
+
+        output =
+            gPhysicsWorld.solveIk(
+                Vec3(
+                    rootX,
+                    rootY,
+                    rootZ
+                ),
+                Vec3(
+                    targetX,
+                    targetY,
+                    targetZ
+                ),
+                lengthOne,
+                lengthTwo,
+                lengthThree,
+                Vec3(
+                    poleX,
+                    poleY,
+                    poleZ
+                )
+            );
+
+    }
+
+
+
+    jfloatArray result =
+        env->NewFloatArray(
+            static_cast<jsize>(
+                output.size()
+            )
+        );
+
+
+
+    if (
+        result == nullptr
+    ) {
+
+        return nullptr;
+
+    }
+
+
+
+    env->SetFloatArrayRegion(
+        result,
+        0,
+        static_cast<jsize>(
+            output.size()
+        ),
+        output.data()
     );
 
 
