@@ -306,8 +306,7 @@ jobs:
 
 
 
-          grep -F 'https://appassets.androidplatform.net/assets/www/index.html' \\
-            "app/src/main/assets/www/index.html"
+          grep -F 'https://appassets.androidplatform.net/assets/www/index.html' "app/src/main/assets/www/index.html"
 
 
 
@@ -387,8 +386,7 @@ jobs:
 
             echo "Checking lib/aether3d_physics.so for $abi"
 
-            unzip -l "$APK_PATH" \\
-              | grep -F "lib/$abi/libaether3d_physics.so"
+            unzip -l "$APK_PATH" | grep -F "lib/$abi/libaether3d_physics.so"
 
           done
 
