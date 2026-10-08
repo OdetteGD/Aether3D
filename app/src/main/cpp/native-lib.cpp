@@ -3144,7 +3144,7 @@ Java_com_aether3d_studio_MainActivity_nativeStepSimulation(
 
 
 
-    std::array<float, 29> output {};
+    std::array<float, 36> output {};
 
 
 
