@@ -150,6 +150,66 @@ jobs:
 
 
 
+      - name: Provision official Mono Android runtime
+        run: |
+          set -euo pipefail
+
+          DOTNET_DIR="$RUNNER_TEMP/dotnet"
+          DOTNET_INSTALL="$RUNNER_TEMP/dotnet-install.sh"
+
+          curl -fsSL "https://dot.net/v1/dotnet-install.sh" -o "$DOTNET_INSTALL"
+          chmod +x "$DOTNET_INSTALL"
+          "$DOTNET_INSTALL" --channel 10.0 --install-dir "$DOTNET_DIR" --no-path
+
+          export DOTNET_ROOT="$DOTNET_DIR"
+          export PATH="$DOTNET_ROOT:$PATH"
+
+          echo "DOTNET_ROOT=$DOTNET_ROOT" >> "$GITHUB_ENV"
+          echo "$DOTNET_ROOT" >> "$GITHUB_PATH"
+
+          dotnet --info
+
+          dotnet workload install android --skip-manifest-update
+
+          JNI_ROOT="app/src/main/jniLibs"
+          rm -rf "$JNI_ROOT"
+          mkdir -p "$JNI_ROOT/arm64-v8a" "$JNI_ROOT/armeabi-v7a" "$JNI_ROOT/x86_64"
+
+          find "$DOTNET_ROOT" "$HOME/.dotnet" -type f -name "libmonosgen-2.0.so" -print 2>/dev/null | sort -u > "$RUNNER_TEMP/monosgen-files.txt"
+          test -s "$RUNNER_TEMP/monosgen-files.txt"
+
+          copy_mono_for_abi() {
+            local abi="$1"
+            local runtime_abi="$2"
+            local destination="$JNI_ROOT/$abi/libmonosgen-2.0.so"
+            local source=""
+
+            while IFS= read -r candidate; do
+              if printf '%s\\n' "$candidate" | grep -Eq "/android-$runtime_abi/|/$runtime_abi/|/$(printf '%s' "$abi" | sed 's/-//g')/"; then
+                source="$candidate"
+                break
+              fi
+            done < "$RUNNER_TEMP/monosgen-files.txt"
+
+            if [ -z "$source" ]; then
+              echo "::error::Could not locate libmonosgen-2.0.so for ABI $abi (runtime id android-$runtime_abi)."
+              cat "$RUNNER_TEMP/monosgen-files.txt"
+              exit 1
+            fi
+
+            cp "$source" "$destination"
+            test -s "$destination"
+            echo "Packaged Mono runtime: $destination"
+            file "$destination"
+          }
+
+          copy_mono_for_abi "arm64-v8a" "arm64"
+          copy_mono_for_abi "armeabi-v7a" "arm"
+          copy_mono_for_abi "x86_64" "x64"
+
+          echo "Official Mono runtime libraries staged for Android packaging."
+
+
       - name: Self-healing Android directory verification
 
         run: |
