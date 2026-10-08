@@ -306,6 +306,11 @@ jobs:
 
 
 
+          grep -F 'https://appassets.androidplatform.net/assets/www/index.html' \\
+            "app/src/main/assets/www/index.html"
+
+
+
       - name: Generate Gradle Wrapper in the cloud
 
         run: |
@@ -365,6 +370,31 @@ jobs:
 
 
           sha256sum "artifacts/app-debug.apk"
+
+
+
+      - name: Verify packaged native shared libraries
+        run: |
+          set -euo pipefail
+
+
+
+          APK_PATH="app/build/outputs/apk/debug/app-debug.apk"
+
+
+
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+
+            echo "Checking lib/aether3d_physics.so for $abi"
+
+            unzip -l "$APK_PATH" \\
+              | grep -F "lib/$abi/libaether3d_physics.so"
+
+          done
+
+
+
+          echo "Native Aether3D .so packaging verified."
 
 
 
