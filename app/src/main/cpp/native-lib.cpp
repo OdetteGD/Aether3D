@@ -2021,6 +2021,578 @@ IKSolution solveThreeJointIk(
 
 
 
+struct CharacterController {
+
+    Vec3 position;
+
+
+
+    Vec3 velocity;
+
+
+
+    float radius =
+        0.35f;
+
+
+
+    float halfHeight =
+        0.9f;
+
+
+
+    float moveAcceleration =
+        28.0f;
+
+
+
+    float moveDamping =
+        10.0f;
+
+
+
+    float maxSpeed =
+        5.5f;
+
+
+
+    float jumpSpeed =
+        5.2f;
+
+
+
+    bool grounded =
+        false;
+
+
+
+    void reset(
+        const Vec3& startPosition
+    ) {
+
+        position =
+            startPosition;
+
+
+
+        velocity =
+            Vec3();
+
+
+
+        grounded =
+            false;
+
+    }
+
+
+
+    void step(
+        const Vec3& desiredVelocity,
+        bool jumpRequested,
+        float deltaSeconds
+    ) {
+
+        const Vec3 desiredHorizontal(
+            desiredVelocity.x,
+            0.0f,
+            desiredVelocity.z
+        );
+
+
+
+        const float desiredSpeed =
+            desiredHorizontal.length();
+
+
+
+        Vec3 clampedDesired =
+            desiredHorizontal;
+
+
+
+        if (
+            desiredSpeed > maxSpeed
+        ) {
+
+            clampedDesired =
+                desiredHorizontal
+                *
+                (
+                    maxSpeed
+                    /
+                    desiredSpeed
+                );
+
+        }
+
+
+
+        const Vec3 horizontalVelocity(
+            velocity.x,
+            0.0f,
+            velocity.z
+        );
+
+
+
+        const Vec3 velocityDelta =
+            clampedDesired
+            -
+            horizontalVelocity;
+
+
+
+        const float accelerationLimit =
+            moveAcceleration
+            *
+            deltaSeconds;
+
+
+
+        const float velocityDeltaLength =
+            velocityDelta.length();
+
+
+
+        if (
+            velocityDeltaLength
+            >
+            accelerationLimit
+        ) {
+
+            const Vec3 limitedDelta =
+                velocityDelta
+                *
+                (
+                    accelerationLimit
+                    /
+                    std::max(
+                        velocityDeltaLength,
+                        kEpsilon
+                    )
+                );
+
+
+
+            velocity.x +=
+                limitedDelta.x;
+
+
+
+            velocity.z +=
+                limitedDelta.z;
+
+        } else {
+
+            velocity.x =
+                clampedDesired.x;
+
+
+
+            velocity.z =
+                clampedDesired.z;
+
+        }
+
+
+
+        if (
+            jumpRequested
+            &&
+            grounded
+        ) {
+
+            velocity.y =
+                jumpSpeed;
+
+
+
+            grounded =
+                false;
+
+        }
+
+
+
+        velocity.y +=
+            kGravity
+            *
+            deltaSeconds;
+
+
+
+        position +=
+            velocity
+            *
+            deltaSeconds;
+
+
+
+        const float groundY =
+            kGroundHeight
+            +
+            halfHeight
+            +
+            radius;
+
+
+
+        if (
+            position.y <= groundY
+        ) {
+
+            position.y =
+                groundY;
+
+
+
+            if (
+                velocity.y < 0.0f
+            ) {
+
+                velocity.y =
+                    0.0f;
+
+            }
+
+
+
+            grounded =
+                true;
+
+        } else {
+
+            grounded =
+                false;
+
+        }
+
+    }
+
+};
+
+
+
+struct VehicleDamageState {
+
+    float health =
+        1000.0f;
+
+
+
+    float engineHealth =
+        100.0f;
+
+
+
+    std::array<float, 4> wheelHealth {
+
+        100.0f,
+
+        100.0f,
+
+        100.0f,
+
+        100.0f
+
+    };
+
+
+
+    float suspensionHealth =
+        100.0f;
+
+
+
+    void reset() {
+
+        health =
+            1000.0f;
+
+
+
+        engineHealth =
+            100.0f;
+
+
+
+        wheelHealth.fill(
+            100.0f
+        );
+
+
+
+        suspensionHealth =
+            100.0f;
+
+    }
+
+
+
+    void applyImpact(
+        float impactEnergy,
+        const Vec3& localImpactPoint
+    ) {
+
+        const float safeEnergy =
+            std::max(
+                0.0f,
+                impactEnergy
+            );
+
+
+
+        const float bodyDamage =
+            safeEnergy
+            *
+            0.055f;
+
+
+
+        health =
+            std::max(
+                0.0f,
+                health
+                -
+                bodyDamage
+            );
+
+
+
+        engineHealth =
+            std::max(
+                0.0f,
+                engineHealth
+                -
+                bodyDamage
+                *
+                (
+                    0.35f
+                    +
+                    std::fabs(
+                        localImpactPoint.x
+                    )
+                    *
+                    0.12f
+                )
+            );
+
+
+
+        const std::size_t wheelIndex =
+            localImpactPoint.z >= 0.0f
+                ? (
+                    localImpactPoint.x >= 0.0f
+                        ? 0
+                        : 2
+                )
+                : (
+                    localImpactPoint.x >= 0.0f
+                        ? 1
+                        : 3
+                );
+
+
+
+        wheelHealth[wheelIndex] =
+            std::max(
+                0.0f,
+                wheelHealth[wheelIndex]
+                -
+                safeEnergy
+                *
+                0.08f
+            );
+
+
+
+        suspensionHealth =
+            std::max(
+                0.0f,
+                suspensionHealth
+                -
+                safeEnergy
+                *
+                0.025f
+            );
+
+    }
+
+
+
+    float driveMultiplier() const {
+
+        return
+            std::clamp(
+                engineHealth / 100.0f,
+                0.0f,
+                1.0f
+            );
+
+    }
+
+
+
+    bool isDestroyed() const {
+
+        return
+            health <= 0.0f
+            ||
+            engineHealth <= 0.0f;
+
+    }
+
+};
+
+
+
+struct DestructibleObjectState {
+
+    Aabb originalBounds;
+
+
+
+    std::vector<FracturePiece> pieces;
+
+
+
+    float health =
+        100.0f;
+
+
+
+    void reset(
+        const Aabb& bounds
+    ) {
+
+        originalBounds =
+            bounds;
+
+
+
+        pieces.clear();
+
+
+
+        pieces.push_back(
+            FracturePiece {
+                bounds,
+                Vec3(
+                    0.0f,
+                    1.0f,
+                    0.0f
+                ),
+                0.0f
+            }
+        );
+
+
+
+        health =
+            100.0f;
+
+    }
+
+
+
+    void applyImpact(
+        const Vec3& impactPoint,
+        const Vec3& impactNormal,
+        float impactEnergy
+    ) {
+
+        if (
+            pieces.empty()
+            ||
+            impactEnergy <= 0.0f
+        ) {
+
+            return;
+
+        }
+
+
+
+        health =
+            std::max(
+                0.0f,
+                health
+                -
+                impactEnergy
+                *
+                0.08f
+            );
+
+
+
+        if (
+            impactEnergy >= 18.0f
+            &&
+            pieces.size() < 16
+        ) {
+
+            std::vector<FracturePiece>
+                fracturedPieces;
+
+
+
+            for (
+                const FracturePiece& piece
+                :
+                pieces
+            ) {
+
+                std::vector<FracturePiece>
+                    localPieces =
+                        fractureAabbByImpactPlane(
+                            piece.bounds,
+                            impactPoint,
+                            impactNormal,
+                            impactEnergy
+                            /
+                            static_cast<float>(
+                                std::max(
+                                    std::size_t(1),
+                                    pieces.size()
+                                )
+                            )
+                        );
+
+
+
+                fracturedPieces.insert(
+                    fracturedPieces.end(),
+                    localPieces.begin(),
+                    localPieces.end()
+                );
+
+            }
+
+
+
+            pieces =
+                std::move(
+                    fracturedPieces
+                );
+
+        }
+
+    }
+
+
+
+    bool destroyed() const {
+
+        return
+            health <= 0.0f;
+
+    }
+
+};
+
+
+
 class PhysicsWorld {
 
 public:
@@ -2042,6 +2614,37 @@ public:
 
 
         vehicle.initialize();
+
+
+
+        character.reset(
+            Vec3(
+                0.0f,
+                1.0f,
+                2.0f
+            )
+        );
+
+
+
+        vehicleDamage.reset();
+
+
+
+        destructibleObject.reset(
+            Aabb {
+                Vec3(
+                    -1.5f,
+                    -0.5f,
+                    -1.5f
+                ),
+                Vec3(
+                    1.5f,
+                    2.5f,
+                    1.5f
+                )
+            }
+        );
 
     }
 
@@ -2074,6 +2677,37 @@ public:
 
 
         vehicle.initialize();
+
+
+
+        character.reset(
+            Vec3(
+                0.0f,
+                1.0f,
+                2.0f
+            )
+        );
+
+
+
+        vehicleDamage.reset();
+
+
+
+        destructibleObject.reset(
+            Aabb {
+                Vec3(
+                    -1.5f,
+                    -0.5f,
+                    -1.5f
+                ),
+                Vec3(
+                    1.5f,
+                    2.5f,
+                    1.5f
+                )
+            }
+        );
 
 
 
@@ -2122,7 +2756,33 @@ public:
 
 
 
+        vehicle.throttle =
+            std::clamp(
+                inputVelocity.x * 0.25f,
+                -1.0f,
+                1.0f
+            );
+
+
+
+        vehicle.linearVelocity =
+            body.linearVelocity;
+
+
+
         vehicle.simulate(
+            deltaSeconds
+        );
+
+
+
+        character.step(
+            Vec3(
+                inputVelocity.x,
+                0.0f,
+                inputVelocity.z
+            ),
+            false,
             deltaSeconds
         );
 
@@ -2165,7 +2825,7 @@ public:
 
 
 
-        std::array<float, 29> output {};
+        std::array<float, 36> output {};
 
 
 
@@ -2249,6 +2909,45 @@ public:
 
 
 
+        output[29] =
+            vehicle.linearVelocity.length();
+
+
+
+        output[30] =
+            vehicle.engineRpm;
+
+
+
+        output[31] =
+            vehicleDamage.health;
+
+
+
+        output[32] =
+            character.grounded
+                ? 1.0f
+                : 0.0f;
+
+
+
+        output[33] =
+            character.velocity.length();
+
+
+
+        output[34] =
+            destructibleObject.health;
+
+
+
+        output[35] =
+            static_cast<float>(
+                destructibleObject.pieces.size()
+            );
+
+
+
         ++simulationFrame;
 
 
@@ -2277,6 +2976,18 @@ private:
 
 
 
+    VehicleDamageState vehicleDamage;
+
+
+
+    CharacterController character;
+
+
+
+    DestructibleObjectState destructibleObject;
+
+
+
     bool initializedFromInput =
         false;
 
@@ -2300,7 +3011,7 @@ PhysicsWorld gPhysicsWorld;
 std::string makeEngineVersion() {
 
     return
-        "Aether3D Native Physics 2.0.0 / C++20 / Android NDK";
+        "Aether3D Native Physics 3.0.0 / C++20 / Android NDK / RigidBody + Vehicle + Character + IK + Destruction";
 
 }
 
